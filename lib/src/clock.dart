@@ -85,8 +85,7 @@ class SystemClock extends Clock {
 class FixedClock extends Clock {
   final DateTime _fixedUtc;
 
-  FixedClock(DateTime fixed)
-      : _fixedUtc = fixed.toUtc();
+  FixedClock(DateTime fixed) : _fixedUtc = fixed.toUtc();
 
   @override
   DateTime _nowUtc() => _fixedUtc;
@@ -96,8 +95,7 @@ class OffsetClock extends Clock {
   final Clock base;
   final Duration offset;
 
-  OffsetClock(this.offset, {Clock? base})
-      : base = base ?? const SystemClock();
+  OffsetClock(this.offset, {Clock? base}) : base = base ?? const SystemClock();
 
   @override
   DateTime _nowUtc() => base.nowUtc().add(offset);
@@ -106,8 +104,7 @@ class OffsetClock extends Clock {
 class AdjustableClock extends Clock {
   DateTime _currentUtc;
 
-  AdjustableClock(DateTime initial)
-      : _currentUtc = initial.toUtc();
+  AdjustableClock(DateTime initial) : _currentUtc = initial.toUtc();
 
   void set(DateTime newValue) => _currentUtc = newValue.toUtc();
 
@@ -121,8 +118,7 @@ class TickingClock extends Clock {
   final Duration tick;
   DateTime _currentUtc;
 
-  TickingClock(DateTime start, this.tick)
-      : _currentUtc = start.toUtc();
+  TickingClock(DateTime start, this.tick) : _currentUtc = start.toUtc();
 
   @override
   DateTime _nowUtc() {
@@ -137,8 +133,8 @@ class StopwatchClock extends Clock {
   final DateTime _originUtc;
 
   StopwatchClock({Stopwatch? sw, DateTime? origin})
-      : _sw = sw ?? (Stopwatch()..start()),
-        _originUtc = (origin ?? DateTime.now()).toUtc();
+    : _sw = sw ?? (Stopwatch()..start()),
+      _originUtc = (origin ?? DateTime.now()).toUtc();
 
   @override
   DateTime _nowUtc() => _originUtc.add(_sw.elapsed);

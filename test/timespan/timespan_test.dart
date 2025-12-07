@@ -169,5 +169,87 @@ void main() {
       // Feb 2023 has 28 days.
       expect(t.toDuration(start: start).inDays, 28);
     });
+
+    test('multiple leap years passed: 3 years spanning 2023→2026', () {
+      // 2024 is a leapyear, 2025 is not.
+      // Period: 2023-01-01 to 2026-01-01
+      // Including leapdays 2024-02-29 totals 365 + 366 + 365 = 1096 dagen
+      final start = DateTime.utc(2023, 1, 1);
+      final t = Timespan(years: 3);
+
+      expect(t.toDuration(start: start).inDays, 1096);
+    });
+
+    test('multiple leap years passed but start after leap day so skip one', () {
+      // 2024 is a leapday but the start is after 29th
+      // Period: 2024-03-01 to 2027-03-01
+      // 2024: rest of year without leapday
+      // 2025: 365
+      // 2026: 365
+      // 2027: until 03-01 (no extra day)
+      //
+      // Total: 365 + 365 + 365 = 1095 dagen.
+      final start = DateTime.utc(2024, 3, 1);
+      final t = Timespan(years: 3);
+
+      expect(t.toDuration(start: start).inDays, 1095);
+    });
+
+    test(
+      'leap day only counted when crossed: spanning Feb 28→Mar 1 in leap year',
+      () {
+        // 2024 is a leapyear.
+        // Feb 28 12:00 to Mar 1 12:00 includes 1 extra (leap)day (29 feb).
+        final start = DateTime.utc(2024, 2, 28, 12);
+        final t = Timespan(days: 2); // 28→29, 29→1
+
+        expect(t.toDuration(start: start).inDays, 2);
+      },
+    );
+
+    test('leap day NOT counted if Timespan ends before it', () {
+      // 2024-02-27 +1 day = 2024-02-28
+      // Leap day 29 feb is not reached
+      final start = DateTime.utc(2024, 2, 27);
+      final t = Timespan(days: 1);
+
+      expect(t.toDuration(start: start).inDays, 1);
+    });
+
+    test(
+      'adding 1 month across Feb 29: Jan 29 2024 + 1M = Feb 29 (leap day)',
+      () {
+        final start = DateTime.utc(2024, 1, 29);
+
+        // Adding a month in leap year:
+        // Jan 29 + 1M = Feb 29 (best effort date clamping)
+        final t = Timespan(months: 1);
+
+        final actual = t.toDuration(start: start);
+        // Jan 29 to Feb 29 = 31 dagen
+        expect(actual.inDays, 31);
+      },
+    );
+
+    test(
+      'adding 1 month across Feb in common year: Jan 29 2023 + 1M → Feb 28',
+      () {
+        final start = DateTime.utc(2023, 1, 29);
+        final t = Timespan(months: 1);
+
+        final actual = t.toDuration(start: start);
+        // Jan 29 to Feb 28 = 30 dagen
+        expect(actual.inDays, 30);
+      },
+    );
+
+    test('adding 10 years crossing exactly two leap years (2016 and 2020)', () {
+      // Start after 29 feb to include leapdays
+      final start = DateTime.utc(2015, 3, 1);
+      final t = Timespan(years: 10);
+
+      // 10 years: 3650 days + 3 leapdays (2016, 2020, 2024)
+      expect(t.toDuration(start: start).inDays, 3653);
+    });
   });
 }
