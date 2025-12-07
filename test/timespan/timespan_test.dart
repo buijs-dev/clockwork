@@ -35,10 +35,11 @@ void main() {
     });
 
     test('throws on invalid ISO8601 string', () {
-      expect(
-        () => Timespan.parse('PX'),
-        throwsA(isA<TimespanParseException>()),
-      );
+      expect(() => Timespan.parse('PX'), throwsA(isA<TimespanParseException>()
+          .having((exc) => exc.source, "should match source",  "PX")
+          .having((exc) => exc.message, "should match message", "Invalid ISO-8601 duration 'PX'. Expected formats like 'P3Y6M4DT12H30M5S', 'P2W', 'PT10S', 'P1M'.")
+          .having((exc) => exc.offset, "should match offset", null),
+      ));
     });
   });
 
