@@ -18,34 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import 'dart:math';
-
 import '../datetime_extension.dart';
 import 'timespan_parser.dart';
 export 'timespan_exception.dart';
-
-/// Internal month length table for non-leap years.
-/// February is handled separately through [_daysInMonth].
-const _monthLengths = <int>[
-  31, // Jan
-  28, // Feb
-  31, // Mar
-  30, // Apr
-  31, // May
-  30, // Jun
-  31, // Jul
-  31, // Aug
-  30, // Sep
-  31, // Oct
-  30, // Nov
-  31, // Dec
-];
 
 /// Represents a calendar-aware, multi-unit span of time.
 ///
 /// Unlike [Duration], which is strictly a count of microseconds, a [Timespan]
 /// can express years, months, weeks, days, hours, minutes, seconds,
-/// milliseconds, microseconds, and even nanoseconds.  
+/// milliseconds, microseconds, and even nanoseconds.
 ///
 /// This makes it useful for:
 /// - Representing ISO-8601 durations (`P3Y6M4DT12H30M5S`)
@@ -91,7 +72,7 @@ class Timespan {
   /// Number of microseconds.
   final int microseconds;
 
-  /// Number of nanoseconds.  
+  /// Number of nanoseconds.
   /// These are internally converted to microseconds where possible.
   final int nanoseconds;
 
@@ -126,7 +107,7 @@ class Timespan {
   factory Timespan.parse(String value) {
     final trimmed = value.trim();
     if (trimmed.startsWith('P')) {
-      return const ISO8601TimespanParser().parse(trimmed)!;
+      return const ISO8601TimespanParser().parse(trimmed);
     } else {
       return const SimpleUnitTimespanParser().parse(trimmed)!;
     }
@@ -138,9 +119,9 @@ class Timespan {
   /// Calendar-based components (years, months, weeks, days) require a
   /// reference instant because the actual number of seconds depends on:
   ///
-  /// - leap years  
-  /// - month lengths  
-  /// - day clamping (e.g., adding 1 month to January 31 ⇒ February 28/29)  
+  /// - leap years
+  /// - month lengths
+  /// - day clamping (e.g., adding 1 month to January 31 ⇒ February 28/29)
   ///
   /// If [start] is omitted, the current UTC time is used.
   ///
@@ -210,69 +191,5 @@ class _Cursor {
     if (days != 0) {
       _current = _current.add(Duration(days: days));
     }
-  }
-}
-
-/// Internal extension that performs calendar-correct arithmetic
-/// on [DateTime] in UTC.
-///
-/// Both [addYears] and [addMonths] adjust the resulting day of month to the
-/// maximum valid day, ensuring dates like “Jan 31 + 1 month” resolve to the
-/// last day of February rather than overflowing into March.
-extension _CalendarArithmetic on DateTime {
-  /// Adds full calendar years while preserving the month/day as closely as
-  /// possible.
-  ///
-  /// If the original day does not exist in the target month (e.g., February
-  /// 30), the result is clamped to the last valid day of that month.
-  DateTime addYears(int years) {
-    final targetYear = year + years;
-    final maxDay = _daysInMonth(targetYear, month);
-    final newDay = min(day, maxDay);
-    return DateTime.utc(
-      targetYear,
-      month,
-      newDay,
-      hour,
-      minute,
-      second,
-      millisecond,
-      microsecond,
-    );
-  }
-
-  /// Adds full calendar months while preserving the day-of-month where possible.
-  ///
-  /// If the resulting month is shorter than the current month, the day
-  /// is clamped to the last valid day.
-  ///
-  /// Handles year rollover automatically.
-  DateTime addMonths(int monthsToAdd) {
-    final totalMonths = month + monthsToAdd;
-    final newYear = year + ((totalMonths - 1) ~/ 12);
-    final newMonth = ((totalMonths - 1) % 12) + 1;
-    final maxDay = _daysInMonth(newYear, newMonth);
-    final newDay = min(day, maxDay);
-    return DateTime.utc(
-      newYear,
-      newMonth,
-      newDay,
-      hour,
-      minute,
-      second,
-      millisecond,
-      microsecond,
-    );
-  }
-}
-
-/// Returns the number of days in the specified [month] of the given [year].
-///
-/// February is determined based on leap-year rules.
-int _daysInMonth(int year, int month) {
-  if (month == 2) {
-    return isLeapYear(year) ? 29 : 28;
-  } else {
-    return _monthLengths[month - 1];
   }
 }

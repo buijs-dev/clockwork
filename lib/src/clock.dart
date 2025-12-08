@@ -95,7 +95,7 @@ abstract class Clock {
 
   // Creates an [AdjustableClock].
   static AdjustableClock adjustable({DateTime? initial}) =>
-    AdjustableClock(initial ?? system().nowUtc());
+      AdjustableClock(initial ?? system().nowUtc());
 
   const Clock();
 
@@ -259,8 +259,8 @@ class StopwatchClock extends Clock {
   final DateTime _originUtc;
 
   StopwatchClock({Stopwatch? sw, DateTime? origin})
-      : _sw = sw ?? (Stopwatch()..start()),
-        _originUtc = (origin ?? DateTime.now()).toUtc();
+    : _sw = sw ?? (Stopwatch()..start()),
+      _originUtc = (origin ?? DateTime.now()).toUtc();
 
   @override
   DateTime _nowUtc() => _originUtc.add(_sw.elapsed);

@@ -4,8 +4,8 @@ import 'package:test/test.dart';
 void main() {
   group('Leap year utilities', () {
     test('isLeapYear top-level function', () {
-      expect(isLeapYear(2000), true);  // divisible by 400
-      expect(isLeapYear(2024), true);  // divisible by 4
+      expect(isLeapYear(2000), true); // divisible by 400
+      expect(isLeapYear(2024), true); // divisible by 4
       expect(isLeapYear(1900), false); // divisible by 100 but not 400
       expect(isLeapYear(2023), false);
     });
@@ -16,9 +16,9 @@ void main() {
     });
 
     test('isLeapMonth and isLeapDay', () {
-      expect(DateTime.utc(2024, 2).isLeapMonth(), true);
+      expect(DateTime.utc(2024, 2).isLeapMonth, true);
       expect(DateTime.utc(2024, 2, 29).isLeapDay, true);
-      expect(DateTime.utc(2023, 2).isLeapMonth(), false);
+      expect(DateTime.utc(2023, 2).isLeapMonth, false);
     });
   });
 
@@ -133,17 +133,11 @@ void main() {
     final b = DateTime.utc(2025, 4, 1, 12, 0, 0);
 
     test('years', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.years),
-        1,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.years), 1);
     });
 
     test('months', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.months),
-        15,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.months), 15);
     });
 
     test('weeks', () {
@@ -152,17 +146,11 @@ void main() {
     });
 
     test('days', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.days),
-        b.difference(a).inDays,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.days), b.difference(a).inDays);
     });
 
     test('hours', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.hours),
-        b.difference(a).inHours,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.hours), b.difference(a).inHours);
     });
 
     test('minutes', () {

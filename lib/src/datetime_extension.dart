@@ -103,100 +103,219 @@ extension DateTimeExtension on DateTime {
   /// or equal to it.
   bool isAfterOrSame(DateTime other) => !isBefore(other);
 
+  // ---------------------------------------------------------------------------
+  // DAY HELPERS
+  // ---------------------------------------------------------------------------
+
+  DateTime startOfDay({bool? utc}) => (utc ?? isUtc)
+      ? DateTime.utc(year, month, day)
+      : DateTime(year, month, day);
+
+  DateTime endOfDay({bool? utc}) => (utc ?? isUtc)
+      ? DateTime.utc(year, month, day, 23, 59, 59, 999, 999)
+      : DateTime(year, month, day, 23, 59, 59, 999, 999);
+
   /// Returns a timestamp truncated to the nearest minute.
   ///
   /// By default, the returned DateTime uses the same UTC/local
   /// behavior as the source object unless explicitly overridden.
-  DateTime roundToMinute({bool? utc}) =>
-      utc ?? isUtc
-          ? DateTime.utc(year, month, day, hour, minute)
-          : DateTime(year, month, day, hour, minute);
+  DateTime roundToMinute({bool? utc}) => (utc ?? isUtc)
+      ? DateTime.utc(year, month, day, hour, minute)
+      : DateTime(year, month, day, hour, minute);
 
-  /// Alias for [roundToMinute] provided for semantic clarity.
-  DateTime floorToMinute({bool? utc}) =>
-      utc ?? isUtc
-          ? DateTime.utc(year, month, day, hour, minute)
-          : DateTime(year, month, day, hour, minute);
+  DateTime floorToMinute({bool? utc}) => roundToMinute(utc: utc);
 
-  /// Midnight (00:00:00.000000) of the same calendar day.
-  DateTime startOfDay({bool? utc}) =>
-      utc ?? isUtc ? DateTime.utc(year, month, day) : DateTime(year, month, day);
+  bool get isLeapDay => month == 2 && day == 29;
 
-  /// 23:59:59.999999 of the same calendar day.
-  DateTime endOfDay({bool? utc}) =>
-      utc ?? isUtc
-          ? DateTime.utc(year, month, day, 23, 59, 59, 999, 999)
-          : DateTime(year, month, day, 23, 59, 59, 999, 999);
+  bool get isLeapMonth => month == 2 && isLeapYear;
 
-  /// First day of the month at midnight.
-  DateTime startOfMonth({bool? utc}) =>
-      utc ?? isUtc ? DateTime.utc(year, month) : DateTime(year, month);
-
-  /// Last microsecond of the month.
-  DateTime endOfMonth({bool? utc}) {
-    final useUtc = utc ?? isUtc;
-    final nextMonth = useUtc
-        ? (month == 12 ? DateTime.utc(year + 1, 1, 1) : DateTime.utc(year, month + 1, 1))
-        : (month == 12 ? DateTime(year + 1, 1, 1) : DateTime(year, month + 1, 1));
-    return nextMonth.subtract(const Duration(microseconds: 1));
-  }
-
-  /// January 1st of the same year, at midnight.
-  DateTime startOfYear({bool? utc}) =>
-      utc ?? isUtc ? DateTime.utc(year, 1, 1) : DateTime(year, 1, 1);
-
-  /// Last second of the year (microseconds always zeroed).
-  DateTime endOfYear({bool? utc}) =>
-      utc ?? isUtc
-          ? DateTime.utc(year, 12, 31, 23, 59, 59, 999, 999)
-          : DateTime(year, 12, 31, 23, 59, 59, 999, 999);
-
-  /// True when this date falls in a leap year.
   bool get isLeapYear => _isLeapYear(year);
 
-  /// Saturday or Sunday.
   bool get isWeekend =>
       weekday == DateTime.saturday || weekday == DateTime.sunday;
 
-  /// Monday through Friday.
   bool get isWeekday => !isWeekend;
 
-  /// True when this month is February in a leap year.
-  bool isLeapMonth() => month == 2 && isLeapYear;
-
-  /// True when this instance represents February 29th.
-  bool get isLeapDay => month == 2 && day == 29;
-
-  /// Calendar match for year, month, and day components.
   bool isSameDay(DateTime other) =>
       year == other.year && month == other.month && day == other.day;
 
-  /// Calendar match for year and month.
   bool isSameMonth(DateTime other) =>
       year == other.year && month == other.month;
 
-  /// Calendar match for year.
   bool isSameYear(DateTime other) => year == other.year;
 
-  int differenceInYears(DateTime other) => differenceIn(other, unit: TimeUnit.years);
+  // ---------------------------------------------------------------------------
+  // MONTH HELPERS
+  // ---------------------------------------------------------------------------
 
-  int differenceInMonths(DateTime other) => differenceIn(other, unit: TimeUnit.months);
+  DateTime startOfMonth({bool? utc}) =>
+      (utc ?? isUtc) ? DateTime.utc(year, month, 1) : DateTime(year, month, 1);
 
-  int differenceInWeeks(DateTime other) => differenceIn(other, unit: TimeUnit.weeks);
+  DateTime endOfMonth({bool? utc}) {
+    final useUtc = utc ?? isUtc;
 
-  /// Difference (absolute) expressed in whole days using
-  /// standard Duration computation.
-  int differenceInDays(DateTime other) => differenceIn(other, unit: TimeUnit.days);
+    final nextMonth = month == 12
+        ? (useUtc ? DateTime.utc(year + 1, 1) : DateTime(year + 1, 1))
+        : (useUtc ? DateTime.utc(year, month + 1) : DateTime(year, month + 1));
 
-  int differenceInHours(DateTime other) => differenceIn(other, unit: TimeUnit.hours);
+    return nextMonth.subtract(const Duration(microseconds: 1));
+  }
 
-  int differenceInMinutes(DateTime other) => differenceIn(other, unit: TimeUnit.minutes);
+  DateTime addMonths(int count, {bool? utc}) {
+    final useUtc = utc ?? isUtc;
+    final total = (year * 12 + month - 1) + count;
+    final y = total ~/ 12;
+    final m = (total % 12) + 1;
+    final lastDay = _daysInMonth(y, m);
+    final d = day.clamp(1, lastDay);
+    return useUtc
+        ? DateTime.utc(y, m, d, hour, minute, second, millisecond, microsecond)
+        : DateTime(y, m, d, hour, minute, second, millisecond, microsecond);
+  }
 
-  int differenceInSeconds(DateTime other) => differenceIn(other, unit: TimeUnit.seconds);
+  int _daysInMonth(int y, int m) {
+    if (m == 2) return _isLeapYear(y) ? 29 : 28;
+    if (m == 4 || m == 6 || m == 9 || m == 11) return 30;
+    return 31;
+  }
 
-  int differenceInMilliseconds(DateTime other) => differenceIn(other, unit: TimeUnit.milliseconds);
+  // ---------------------------------------------------------------------------
+  // YEAR HELPERS
+  // ---------------------------------------------------------------------------
 
-  int differenceInMicroseconds(DateTime other) => differenceIn(other, unit: TimeUnit.microseconds);
+  DateTime startOfYear({bool? utc}) =>
+      (utc ?? isUtc) ? DateTime.utc(year, 1, 1) : DateTime(year, 1, 1);
+
+  DateTime endOfYear({bool? utc}) => (utc ?? isUtc)
+      ? DateTime.utc(year, 12, 31, 23, 59, 59, 999, 999)
+      : DateTime(year, 12, 31, 23, 59, 59, 999, 999);
+
+  DateTime addYears(int count, {bool? utc}) {
+    final newYear = year + count;
+
+    if (month == 2 && day == 29 && !_isLeapYear(newYear)) {
+      return copyWith(year: newYear, month: 2, day: 28, utc: utc ?? isUtc);
+    }
+
+    return copyWith(year: newYear, utc: utc ?? isUtc);
+  }
+
+  // ---------------------------------------------------------------------------
+  // WEEK HELPERS
+  // ---------------------------------------------------------------------------
+
+  DateTime startOfWeek({bool? utc}) {
+    final useUtc = utc ?? isUtc;
+    final offset = weekday - DateTime.monday;
+
+    final base = useUtc
+        ? DateTime.utc(year, month, day)
+        : DateTime(year, month, day);
+
+    return base.subtract(Duration(days: offset));
+  }
+
+  DateTime endOfWeek({bool? utc}) => startOfWeek(
+    utc: utc,
+  ).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
+
+  // ---------------------------------------------------------------------------
+  // ISO 8601 WEEK HELPERS
+  // ---------------------------------------------------------------------------
+
+  DateTime _isoWeekStart({bool? utc}) {
+    final useUtc = utc ?? isUtc;
+    final base = useUtc
+        ? DateTime.utc(year, month, day)
+        : DateTime(year, month, day);
+
+    final w = base.weekday == 7 ? 7 : base.weekday;
+    return base.subtract(Duration(days: w - 1));
+  }
+
+  DateTime startOfISOWeek({bool? utc}) => _isoWeekStart(utc: utc);
+
+  DateTime endOfISOWeek({bool? utc}) => startOfISOWeek(
+    utc: utc,
+  ).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
+
+  int get isoWeekYear {
+    final thursday = add(Duration(days: 4 - weekday));
+    return thursday.year;
+  }
+
+  int get isoWeekNumber {
+    final useUtc = isUtc;
+    final isoYear = isoWeekYear;
+
+    final jan4 = useUtc ? DateTime.utc(isoYear, 1, 4) : DateTime(isoYear, 1, 4);
+
+    final jan4Start = jan4._isoWeekStart(utc: useUtc);
+    final thisStart = startOfISOWeek(utc: useUtc);
+
+    return thisStart.difference(jan4Start).inDays ~/ 7 + 1;
+  }
+
+  // ---------------------------------------------------------------------------
+  // QUARTER HELPERS
+  // ---------------------------------------------------------------------------
+
+  int get quarter => ((month - 1) ~/ 3) + 1;
+
+  DateTime startOfQuarter({bool? utc}) {
+    final useUtc = utc ?? isUtc;
+    final m = ((quarter - 1) * 3) + 1;
+
+    return useUtc ? DateTime.utc(year, m, 1) : DateTime(year, m, 1);
+  }
+
+  DateTime endOfQuarter({bool? utc}) {
+    final useUtc = utc ?? isUtc;
+    final endM = quarter * 3;
+
+    final next = endM == 12
+        ? (useUtc ? DateTime.utc(year + 1, 1, 1) : DateTime(year + 1, 1, 1))
+        : (useUtc
+              ? DateTime.utc(year, endM + 1, 1)
+              : DateTime(year, endM + 1, 1));
+
+    return next.subtract(const Duration(microseconds: 1));
+  }
+
+  DateTime nextQuarter({bool? utc}) => addMonths(3, utc: utc);
+
+  DateTime previousQuarter({bool? utc}) => addMonths(-3, utc: utc);
+
+  // ---------------------------------------------------------------------------
+  // EXTRA UTILITIES
+  // ---------------------------------------------------------------------------
+
+  /// Clamp between [min] and [max].
+  DateTime clamp(DateTime min, DateTime max) =>
+      isBefore(min) ? min : (isAfter(max) ? max : this);
+
+  /// Replace time portion.
+  DateTime atTime(int h, int m, [int s = 0, int ms = 0, int us = 0]) =>
+      copyWith(hour: h, minute: m, second: s, millisecond: ms, microsecond: us);
+
+  /// Next occurrence of a weekday (1=Mon … 7=Sun)
+  DateTime nextWeekday(int weekday, {bool? utc}) {
+    final delta = (weekday - this.weekday + 7) % 7;
+    return add(Duration(days: delta == 0 ? 7 : delta));
+  }
+
+  /// Previous occurrence of a weekday
+  DateTime previousWeekday(int weekday, {bool? utc}) {
+    final delta = (this.weekday - weekday + 7) % 7;
+    return subtract(Duration(days: delta == 0 ? 7 : delta));
+  }
+
+  /// True if in range [start, end] inclusive.
+  bool between(DateTime start, DateTime end) =>
+      (isAfterOrSame(start) && isBeforeOrSame(end));
+
+  /// Noon helper.
+  DateTime toMidday({bool? utc}) => atTime(12, 0);
 
   /// General-purpose temporal distance between this instant
   /// and [other], expressed in the given [unit].
@@ -210,41 +329,56 @@ extension DateTimeExtension on DateTime {
   ///   - `months = (yearDiff * 12) + monthDiff`
   ///   - `years = months ~/ 12`
   int differenceIn(DateTime other, {required TimeUnit unit}) {
-    final dur = difference(other);
-    final absDur = dur.isNegative ? dur * -1 : dur;
-
+    final d = difference(other);
+    final abs = d.isNegative ? -d : d;
     switch (unit) {
       case TimeUnit.microseconds:
-        return absDur.inMicroseconds;
-
+        return abs.inMicroseconds;
       case TimeUnit.milliseconds:
-        return absDur.inMilliseconds;
-
+        return abs.inMilliseconds;
       case TimeUnit.seconds:
-        return absDur.inSeconds;
-
+        return abs.inSeconds;
       case TimeUnit.minutes:
-        return absDur.inMinutes;
-
+        return abs.inMinutes;
       case TimeUnit.hours:
-        return absDur.inHours;
-
+        return abs.inHours;
       case TimeUnit.days:
-        return absDur.inDays;
-
+        return abs.inDays;
       case TimeUnit.weeks:
-        return absDur.inDays ~/ 7;
-
+        return abs.inDays ~/ 7;
       case TimeUnit.months:
-        final y1 = year, y2 = other.year;
-        final m1 = month, m2 = other.month;
-        final total1 = y1 * 12 + m1;
-        final total2 = y2 * 12 + m2;
+        final total1 = year * 12 + month;
+        final total2 = other.year * 12 + other.month;
         return (total1 - total2).abs();
-
       case TimeUnit.years:
-        final yDiff = (year - other.year).abs();
-        return yDiff;
+        return (year - other.year).abs();
     }
   }
+
+  int differenceInYears(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.years);
+
+  int differenceInMonths(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.months);
+
+  int differenceInWeeks(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.weeks);
+
+  int differenceInDays(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.days);
+
+  int differenceInHours(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.hours);
+
+  int differenceInMinutes(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.minutes);
+
+  int differenceInSeconds(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.seconds);
+
+  int differenceInMilliseconds(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.milliseconds);
+
+  int differenceInMicroseconds(DateTime other) =>
+      differenceIn(other, unit: TimeUnit.microseconds);
 }
