@@ -82,20 +82,16 @@ abstract class Clock {
   static FixedClock fixed(DateTime fixedTime) => FixedClock(fixedTime);
 
   /// Creates a [OffsetClock] from system time.
-  static OffsetClock offset(Duration offset, {Clock? base}) =>
-      OffsetClock(offset, base: base);
+  static OffsetClock offset(Duration offset, {Clock? base}) => OffsetClock(offset, base: base);
 
   /// Creates a [StopwatchClock].
-  static StopwatchClock stopwatch({Stopwatch? sw, DateTime? origin}) =>
-      StopwatchClock(sw: sw, origin: origin);
+  static StopwatchClock stopwatch({Stopwatch? sw, DateTime? origin}) => StopwatchClock(sw: sw, origin: origin);
 
   /// Creates a [TickingClock].
-  static TickingClock ticking(DateTime start, Duration tick) =>
-      TickingClock(start, tick);
+  static TickingClock ticking(DateTime start, Duration tick) => TickingClock(start, tick);
 
   // Creates an [AdjustableClock].
-  static AdjustableClock adjustable({DateTime? initial}) =>
-      AdjustableClock(initial ?? system().nowUtc());
+  static AdjustableClock adjustable({DateTime? initial}) => AdjustableClock(initial ?? system().nowUtc());
 
   const Clock();
 
@@ -131,20 +127,17 @@ abstract class Clock {
   /// Returns the Unix timestamp in whole seconds.
   ///
   /// This value is always derived from the internal UTC value.
-  int secondsSinceEpoch({bool? asUtc}) =>
-      millisecondsSinceEpoch(asUtc: asUtc) ~/ 1000;
+  int secondsSinceEpoch({bool? asUtc}) => millisecondsSinceEpoch(asUtc: asUtc) ~/ 1000;
 
   /// Returns the Unix timestamp in milliseconds.
   ///
   /// The returned value always represents UTC milliseconds.
-  int millisecondsSinceEpoch({bool? asUtc}) =>
-      now(asUtc: true).millisecondsSinceEpoch;
+  int millisecondsSinceEpoch({bool? asUtc}) => now(asUtc: true).millisecondsSinceEpoch;
 
   /// Returns the Unix timestamp in microseconds.
   ///
   /// The returned value always represents UTC microseconds.
-  int microsecondsSinceEpoch({bool? asUtc}) =>
-      now(asUtc: true).microsecondsSinceEpoch;
+  int microsecondsSinceEpoch({bool? asUtc}) => now(asUtc: true).microsecondsSinceEpoch;
 
   /// Returns the timezone offset of the current instant.
   ///

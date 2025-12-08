@@ -18,9 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import '../datetime_extension.dart';
+import 'datetime_extension.dart';
 import 'timespan_parser.dart';
-export 'timespan_exception.dart';
 
 /// Represents a calendar-aware, multi-unit span of time.
 ///

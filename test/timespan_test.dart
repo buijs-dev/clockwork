@@ -112,40 +112,34 @@ void main() {
 
     test('throws on completely invalid simple-unit input', () {
       // No number + unit pair present at all
-      expect(
-        () => Timespan.parse('abc'),
-        throwsA(isA<TimespanParseException>()),
-      );
+      expect(() => Timespan.parse('abc'), throwsA(isA<TimespanParseException>()));
     });
   });
 
   group('Timespan.toDuration', () {
-    test(
-      'computes calendar-aware years/months and exact time with reference',
-      () {
-        final start = DateTime.utc(2023, 1, 15, 12, 0, 0, 0, 0);
-        final t = Timespan(
-          years: 1,
-          months: 2,
-          weeks: 1,
-          days: 3,
-          hours: 4,
-          minutes: 5,
-          seconds: 6,
-          milliseconds: 7,
-          microseconds: 8,
-          nanoseconds: 900, // contributes 0 microseconds (integer division)
-        );
+    test('computes calendar-aware years/months and exact time with reference', () {
+      final start = DateTime.utc(2023, 1, 15, 12, 0, 0, 0, 0);
+      final t = Timespan(
+        years: 1,
+        months: 2,
+        weeks: 1,
+        days: 3,
+        hours: 4,
+        minutes: 5,
+        seconds: 6,
+        milliseconds: 7,
+        microseconds: 8,
+        nanoseconds: 900, // contributes 0 microseconds (integer division)
+      );
 
-        final actual = t.toDuration(start: start);
-        expect(actual.inDays, 435);
-        expect(actual.inHours, 10444);
-        expect(actual.inMinutes, 626645);
-        expect(actual.inSeconds, 37598706);
-        expect(actual.inMilliseconds, 37598706007);
-        expect(actual.inMicroseconds, 37598706007008);
-      },
-    );
+      final actual = t.toDuration(start: start);
+      expect(actual.inDays, 435);
+      expect(actual.inHours, 10444);
+      expect(actual.inMinutes, 626645);
+      expect(actual.inSeconds, 37598706);
+      expect(actual.inMilliseconds, 37598706007);
+      expect(actual.inMicroseconds, 37598706007008);
+    });
 
     test('leap year: 1 year starting before Feb 29 (2024-01-01)', () {
       // 2024 is a leap year.
@@ -204,17 +198,14 @@ void main() {
       expect(t.toDuration(start: start).inDays, 1095);
     });
 
-    test(
-      'leap day only counted when crossed: spanning Feb 28→Mar 1 in leap year',
-      () {
-        // 2024 is a leapyear.
-        // Feb 28 12:00 to Mar 1 12:00 includes 1 extra (leap)day (29 feb).
-        final start = DateTime.utc(2024, 2, 28, 12);
-        final t = Timespan(days: 2); // 28→29, 29→1
+    test('leap day only counted when crossed: spanning Feb 28→Mar 1 in leap year', () {
+      // 2024 is a leapyear.
+      // Feb 28 12:00 to Mar 1 12:00 includes 1 extra (leap)day (29 feb).
+      final start = DateTime.utc(2024, 2, 28, 12);
+      final t = Timespan(days: 2); // 28→29, 29→1
 
-        expect(t.toDuration(start: start).inDays, 2);
-      },
-    );
+      expect(t.toDuration(start: start).inDays, 2);
+    });
 
     test('leap day NOT counted if Timespan ends before it', () {
       // 2024-02-27 +1 day = 2024-02-28
@@ -225,32 +216,26 @@ void main() {
       expect(t.toDuration(start: start).inDays, 1);
     });
 
-    test(
-      'adding 1 month across Feb 29: Jan 29 2024 + 1M = Feb 29 (leap day)',
-      () {
-        final start = DateTime.utc(2024, 1, 29);
+    test('adding 1 month across Feb 29: Jan 29 2024 + 1M = Feb 29 (leap day)', () {
+      final start = DateTime.utc(2024, 1, 29);
 
-        // Adding a month in leap year:
-        // Jan 29 + 1M = Feb 29 (best effort date clamping)
-        final t = Timespan(months: 1);
+      // Adding a month in leap year:
+      // Jan 29 + 1M = Feb 29 (best effort date clamping)
+      final t = Timespan(months: 1);
 
-        final actual = t.toDuration(start: start);
-        // Jan 29 to Feb 29 = 31 dagen
-        expect(actual.inDays, 31);
-      },
-    );
+      final actual = t.toDuration(start: start);
+      // Jan 29 to Feb 29 = 31 dagen
+      expect(actual.inDays, 31);
+    });
 
-    test(
-      'adding 1 month across Feb in common year: Jan 29 2023 + 1M → Feb 28',
-      () {
-        final start = DateTime.utc(2023, 1, 29);
-        final t = Timespan(months: 1);
+    test('adding 1 month across Feb in common year: Jan 29 2023 + 1M → Feb 28', () {
+      final start = DateTime.utc(2023, 1, 29);
+      final t = Timespan(months: 1);
 
-        final actual = t.toDuration(start: start);
-        // Jan 29 to Feb 28 = 30 dagen
-        expect(actual.inDays, 30);
-      },
-    );
+      final actual = t.toDuration(start: start);
+      // Jan 29 to Feb 28 = 30 dagen
+      expect(actual.inDays, 30);
+    });
 
     test('adding 10 years crossing exactly two leap years (2016 and 2020)', () {
       // Start after 29 feb to include leapdays

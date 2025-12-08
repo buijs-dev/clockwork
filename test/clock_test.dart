@@ -57,11 +57,7 @@ void main() {
       final systemClock = DateTime.now().toUtc().add(offset);
 
       // Expect - identical times
-      expect(
-        offsetClock.now(asUtc: true).difference(systemClock).inSeconds.abs() <=
-            1,
-        true,
-      );
+      expect(offsetClock.now(asUtc: true).difference(systemClock).inSeconds.abs() <= 1, true);
     });
   });
 

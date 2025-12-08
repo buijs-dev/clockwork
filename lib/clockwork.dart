@@ -19,5 +19,7 @@
 // SOFTWARE.
 
 export 'src/clock.dart';
-export 'src/timespan/timespan.dart';
 export 'src/datetime_extension.dart';
+export 'src/timespan.dart';
+export 'src/timespan_exception.dart';
+export 'src/timespan_parser.dart';

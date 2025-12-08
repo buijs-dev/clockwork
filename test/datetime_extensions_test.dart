@@ -95,36 +95,18 @@ void main() {
 
   group('same-day/month/year checks', () {
     test('isSameDay', () {
-      expect(
-        DateTime.utc(2024, 1, 1).isSameDay(DateTime.utc(2024, 1, 1, 23)),
-        true,
-      );
-      expect(
-        DateTime.utc(2024, 1, 1).isSameDay(DateTime.utc(2024, 1, 2)),
-        false,
-      );
+      expect(DateTime.utc(2024, 1, 1).isSameDay(DateTime.utc(2024, 1, 1, 23)), true);
+      expect(DateTime.utc(2024, 1, 1).isSameDay(DateTime.utc(2024, 1, 2)), false);
     });
 
     test('isSameMonth', () {
-      expect(
-        DateTime.utc(2024, 2, 1).isSameMonth(DateTime.utc(2024, 2, 20)),
-        true,
-      );
-      expect(
-        DateTime.utc(2024, 2, 1).isSameMonth(DateTime.utc(2024, 3, 1)),
-        false,
-      );
+      expect(DateTime.utc(2024, 2, 1).isSameMonth(DateTime.utc(2024, 2, 20)), true);
+      expect(DateTime.utc(2024, 2, 1).isSameMonth(DateTime.utc(2024, 3, 1)), false);
     });
 
     test('isSameYear', () {
-      expect(
-        DateTime.utc(2024, 1, 1).isSameYear(DateTime.utc(2024, 12, 31)),
-        true,
-      );
-      expect(
-        DateTime.utc(2024, 1, 1).isSameYear(DateTime.utc(2025, 1, 1)),
-        false,
-      );
+      expect(DateTime.utc(2024, 1, 1).isSameYear(DateTime.utc(2024, 12, 31)), true);
+      expect(DateTime.utc(2024, 1, 1).isSameYear(DateTime.utc(2025, 1, 1)), false);
     });
   });
 
@@ -154,31 +136,19 @@ void main() {
     });
 
     test('minutes', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.minutes),
-        b.difference(a).inMinutes,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.minutes), b.difference(a).inMinutes);
     });
 
     test('seconds', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.seconds),
-        b.difference(a).inSeconds,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.seconds), b.difference(a).inSeconds);
     });
 
     test('milliseconds', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.milliseconds),
-        b.difference(a).inMilliseconds,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.milliseconds), b.difference(a).inMilliseconds);
     });
 
     test('microseconds', () {
-      expect(
-        a.differenceIn(b, unit: TimeUnit.microseconds),
-        b.difference(a).inMicroseconds,
-      );
+      expect(a.differenceIn(b, unit: TimeUnit.microseconds), b.difference(a).inMicroseconds);
     });
   });
 

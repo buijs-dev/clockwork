@@ -21,25 +21,14 @@
 /// Basic leap-year test for a given Gregorian year.
 bool isLeapYear(int year) => _isLeapYear(year);
 
-bool _isLeapYear(int year) =>
-    (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
+bool _isLeapYear(int year) => (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0);
 
 /// Supported time units for distance/difference calculations.
 ///
 /// This enum allows callers to express which granularity of
 /// temporal distance they want, mapping cleanly onto common
 /// calendar and duration interpretations.
-enum TimeUnit {
-  years,
-  months,
-  weeks,
-  days,
-  hours,
-  minutes,
-  seconds,
-  milliseconds,
-  microseconds,
-}
+enum TimeUnit { years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds }
 
 /// Extension with a set of convenience utilities providing
 /// calendar-safe manipulation, truncation, comparison, and
@@ -107,9 +96,7 @@ extension DateTimeExtension on DateTime {
   // DAY HELPERS
   // ---------------------------------------------------------------------------
 
-  DateTime startOfDay({bool? utc}) => (utc ?? isUtc)
-      ? DateTime.utc(year, month, day)
-      : DateTime(year, month, day);
+  DateTime startOfDay({bool? utc}) => (utc ?? isUtc) ? DateTime.utc(year, month, day) : DateTime(year, month, day);
 
   DateTime endOfDay({bool? utc}) => (utc ?? isUtc)
       ? DateTime.utc(year, month, day, 23, 59, 59, 999, 999)
@@ -119,9 +106,8 @@ extension DateTimeExtension on DateTime {
   ///
   /// By default, the returned DateTime uses the same UTC/local
   /// behavior as the source object unless explicitly overridden.
-  DateTime roundToMinute({bool? utc}) => (utc ?? isUtc)
-      ? DateTime.utc(year, month, day, hour, minute)
-      : DateTime(year, month, day, hour, minute);
+  DateTime roundToMinute({bool? utc}) =>
+      (utc ?? isUtc) ? DateTime.utc(year, month, day, hour, minute) : DateTime(year, month, day, hour, minute);
 
   DateTime floorToMinute({bool? utc}) => roundToMinute(utc: utc);
 
@@ -131,16 +117,13 @@ extension DateTimeExtension on DateTime {
 
   bool get isLeapYear => _isLeapYear(year);
 
-  bool get isWeekend =>
-      weekday == DateTime.saturday || weekday == DateTime.sunday;
+  bool get isWeekend => weekday == DateTime.saturday || weekday == DateTime.sunday;
 
   bool get isWeekday => !isWeekend;
 
-  bool isSameDay(DateTime other) =>
-      year == other.year && month == other.month && day == other.day;
+  bool isSameDay(DateTime other) => year == other.year && month == other.month && day == other.day;
 
-  bool isSameMonth(DateTime other) =>
-      year == other.year && month == other.month;
+  bool isSameMonth(DateTime other) => year == other.year && month == other.month;
 
   bool isSameYear(DateTime other) => year == other.year;
 
@@ -148,8 +131,7 @@ extension DateTimeExtension on DateTime {
   // MONTH HELPERS
   // ---------------------------------------------------------------------------
 
-  DateTime startOfMonth({bool? utc}) =>
-      (utc ?? isUtc) ? DateTime.utc(year, month, 1) : DateTime(year, month, 1);
+  DateTime startOfMonth({bool? utc}) => (utc ?? isUtc) ? DateTime.utc(year, month, 1) : DateTime(year, month, 1);
 
   DateTime endOfMonth({bool? utc}) {
     final useUtc = utc ?? isUtc;
@@ -183,12 +165,10 @@ extension DateTimeExtension on DateTime {
   // YEAR HELPERS
   // ---------------------------------------------------------------------------
 
-  DateTime startOfYear({bool? utc}) =>
-      (utc ?? isUtc) ? DateTime.utc(year, 1, 1) : DateTime(year, 1, 1);
+  DateTime startOfYear({bool? utc}) => (utc ?? isUtc) ? DateTime.utc(year, 1, 1) : DateTime(year, 1, 1);
 
-  DateTime endOfYear({bool? utc}) => (utc ?? isUtc)
-      ? DateTime.utc(year, 12, 31, 23, 59, 59, 999, 999)
-      : DateTime(year, 12, 31, 23, 59, 59, 999, 999);
+  DateTime endOfYear({bool? utc}) =>
+      (utc ?? isUtc) ? DateTime.utc(year, 12, 31, 23, 59, 59, 999, 999) : DateTime(year, 12, 31, 23, 59, 59, 999, 999);
 
   DateTime addYears(int count, {bool? utc}) {
     final newYear = year + count;
@@ -208,16 +188,13 @@ extension DateTimeExtension on DateTime {
     final useUtc = utc ?? isUtc;
     final offset = weekday - DateTime.monday;
 
-    final base = useUtc
-        ? DateTime.utc(year, month, day)
-        : DateTime(year, month, day);
+    final base = useUtc ? DateTime.utc(year, month, day) : DateTime(year, month, day);
 
     return base.subtract(Duration(days: offset));
   }
 
-  DateTime endOfWeek({bool? utc}) => startOfWeek(
-    utc: utc,
-  ).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
+  DateTime endOfWeek({bool? utc}) =>
+      startOfWeek(utc: utc).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
 
   // ---------------------------------------------------------------------------
   // ISO 8601 WEEK HELPERS
@@ -225,9 +202,7 @@ extension DateTimeExtension on DateTime {
 
   DateTime _isoWeekStart({bool? utc}) {
     final useUtc = utc ?? isUtc;
-    final base = useUtc
-        ? DateTime.utc(year, month, day)
-        : DateTime(year, month, day);
+    final base = useUtc ? DateTime.utc(year, month, day) : DateTime(year, month, day);
 
     final w = base.weekday == 7 ? 7 : base.weekday;
     return base.subtract(Duration(days: w - 1));
@@ -235,9 +210,8 @@ extension DateTimeExtension on DateTime {
 
   DateTime startOfISOWeek({bool? utc}) => _isoWeekStart(utc: utc);
 
-  DateTime endOfISOWeek({bool? utc}) => startOfISOWeek(
-    utc: utc,
-  ).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
+  DateTime endOfISOWeek({bool? utc}) =>
+      startOfISOWeek(utc: utc).add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
 
   int get isoWeekYear {
     final thursday = add(Duration(days: 4 - weekday));
@@ -275,9 +249,7 @@ extension DateTimeExtension on DateTime {
 
     final next = endM == 12
         ? (useUtc ? DateTime.utc(year + 1, 1, 1) : DateTime(year + 1, 1, 1))
-        : (useUtc
-              ? DateTime.utc(year, endM + 1, 1)
-              : DateTime(year, endM + 1, 1));
+        : (useUtc ? DateTime.utc(year, endM + 1, 1) : DateTime(year, endM + 1, 1));
 
     return next.subtract(const Duration(microseconds: 1));
   }
@@ -291,8 +263,7 @@ extension DateTimeExtension on DateTime {
   // ---------------------------------------------------------------------------
 
   /// Clamp between [min] and [max].
-  DateTime clamp(DateTime min, DateTime max) =>
-      isBefore(min) ? min : (isAfter(max) ? max : this);
+  DateTime clamp(DateTime min, DateTime max) => isBefore(min) ? min : (isAfter(max) ? max : this);
 
   /// Replace time portion.
   DateTime atTime(int h, int m, [int s = 0, int ms = 0, int us = 0]) =>
@@ -311,8 +282,7 @@ extension DateTimeExtension on DateTime {
   }
 
   /// True if in range [start, end] inclusive.
-  bool between(DateTime start, DateTime end) =>
-      (isAfterOrSame(start) && isBeforeOrSame(end));
+  bool between(DateTime start, DateTime end) => (isAfterOrSame(start) && isBeforeOrSame(end));
 
   /// Noon helper.
   DateTime toMidday({bool? utc}) => atTime(12, 0);
@@ -355,30 +325,21 @@ extension DateTimeExtension on DateTime {
     }
   }
 
-  int differenceInYears(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.years);
+  int differenceInYears(DateTime other) => differenceIn(other, unit: TimeUnit.years);
 
-  int differenceInMonths(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.months);
+  int differenceInMonths(DateTime other) => differenceIn(other, unit: TimeUnit.months);
 
-  int differenceInWeeks(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.weeks);
+  int differenceInWeeks(DateTime other) => differenceIn(other, unit: TimeUnit.weeks);
 
-  int differenceInDays(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.days);
+  int differenceInDays(DateTime other) => differenceIn(other, unit: TimeUnit.days);
 
-  int differenceInHours(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.hours);
+  int differenceInHours(DateTime other) => differenceIn(other, unit: TimeUnit.hours);
 
-  int differenceInMinutes(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.minutes);
+  int differenceInMinutes(DateTime other) => differenceIn(other, unit: TimeUnit.minutes);
 
-  int differenceInSeconds(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.seconds);
+  int differenceInSeconds(DateTime other) => differenceIn(other, unit: TimeUnit.seconds);
 
-  int differenceInMilliseconds(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.milliseconds);
+  int differenceInMilliseconds(DateTime other) => differenceIn(other, unit: TimeUnit.milliseconds);
 
-  int differenceInMicroseconds(DateTime other) =>
-      differenceIn(other, unit: TimeUnit.microseconds);
+  int differenceInMicroseconds(DateTime other) => differenceIn(other, unit: TimeUnit.microseconds);
 }
