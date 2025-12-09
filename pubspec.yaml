@@ -1,5 +1,6 @@
 name: clockwork
-description: A sample command-line application.
+description: 'High-performance time utilities for Dart: ISO-8601 & Go-style durations included.'
+
 version: 1.0.0
 repository: https://github.com/buijs-dev/clockwork
 

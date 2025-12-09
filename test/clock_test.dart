@@ -134,41 +134,4 @@ void main() {
       expect(local2.toUtc(), DateTime.utc(2025, 1, 1, 1));
     });
   });
-
-  group('StopwatchClock', () {
-    test('advances based on elapsed stopwatch time', () async {
-      // Given
-      final stopwatch = Stopwatch()..start();
-      final origin = DateTime.utc(2025, 1, 1, 0);
-      final clock = StopwatchClock(sw: stopwatch, origin: origin);
-
-      // When
-      final t1 = clock.now(asUtc: true);
-
-      // Then
-      expect((t1.difference(origin).inMilliseconds).abs() < 50, true);
-
-      // When
-      await Future.delayed(Duration(milliseconds: 120));
-
-      // Then
-      final t2 = clock.now(asUtc: true);
-      expect((t2.difference(origin).inMilliseconds) >= 100, true);
-    });
-
-    test('local representation is valid', () async {
-      // Given
-      final stopwatch = Stopwatch()..start();
-      final origin = DateTime.utc(2025, 1, 1, 12, 0);
-      final clock = StopwatchClock(sw: stopwatch, origin: origin);
-
-      // When
-      await Future.delayed(Duration(milliseconds: 10));
-      final local = clock.now(asUtc: false);
-
-      // Then
-      expect(local.isUtc, false);
-      expect(local.toUtc().isAfter(origin), true);
-    });
-  });
 }

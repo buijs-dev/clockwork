@@ -19,23 +19,75 @@
 // SOFTWARE.
 
 import 'timespan.dart';
-import 'timespan_exception.dart';
 
-const _nanosecondsSuffix = "ns";
-const _microsecondsSuffix = "us";
-const _millisecondsSuffix = "ms";
-const _secondsSuffix = "s";
-const _minutesSuffix = "m";
-const _hoursSuffix = "h";
-const _daysSuffix = "d";
+const int _whitespace = 32; // ' '
+const int _zero = 48; // 0
+const int _nine = 57; // 9
+const int _dot = 46; // .
+const int _dUppercase = 68; // D
+const int _hUppercase = 72; // H
+const int _mUppercase = 77; // M
+const int _nUppercase = 78; // N
+const int _pUppercase = 80; // P
+const int _sUppercase = 83; // S
+const int _tUppercase = 84; // T
+const int _uUppercase = 85; // U
+const int _wUppercase = 87; // W
+const int _yUppercase = 89; // Y
+const int _dLowercase = 100; // d
+const int _hLowercase = 104; // h
+const int _mLowercase = 109; // m
+const int _pLowercase = 112; // p
+const int _sLowercase = 115; // s
+const int _tLowercase = 116; // t
+const int _nLowercase = 110; // n
+const int _uLowercase = 117; // u
+const int _wLowercase = 119; // w
+const int _yLowercase = 121; // y
+const int _nsMultiplier = 1;
+const int _usMultiplier = 1000 * _nsMultiplier;
+const int _msMultiplier = 1000 * _usMultiplier;
+const int _sMultiplier = 1000 * _msMultiplier;
+const int _mMultiplier = 60 * _sMultiplier;
+const int _hMultiplier = 60 * _mMultiplier;
+const int _dMultiplier = 24 * _hMultiplier;
+
+// pow10 lookup for fractional parsing
+const List<int> _pow10 = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
 
 sealed class TimespanParser {
   const TimespanParser();
 
   Timespan? parse(String value);
+
+  Timespan parseOrThrow(String value) {
+    final parsed = parse(value);
+    if (parsed != null) {
+      return parsed;
+    } else {
+      throw TimespanParseException("Invalid value for parser $runtimeType", value);
+    }
+  }
 }
 
-/// ISO 8601 duration format parser.
+/// Exception thrown when a duration cannot be parsed.
+class TimespanParseException implements FormatException {
+  @override
+  final String message;
+
+  @override
+  final String? source;
+
+  @override
+  final int? offset;
+
+  TimespanParseException(this.message, [this.source, this.offset]);
+
+  @override
+  String toString() => '$runtimeType: $message';
+}
+
+/// ISO 8601 duration format (case-insensitve) parser.
 ///
 /// ISO 8601 durations follow the pattern:
 ///
@@ -61,39 +113,168 @@ sealed class TimespanParser {
 /// Represents a duration of **3 years**, **6 months**, **4 days**,
 /// **12 hours**, **30 minutes**, and **5 seconds**.
 class ISO8601TimespanParser extends TimespanParser {
-  static final _regex = RegExp(
-    r'^P'
-    r'(?:(\d+)Y)?' // 1: years
-    r'(?:(\d+)M)?' // 2: months (date part)
-    r'(?:(\d+)W)?' // 3: weeks
-    r'(?:(\d+)D)?' // 4: days
-    r'(?:T'
-    r'(?:(\d+)H)?' // 5: hours
-    r'(?:(\d+)M)?' // 6: minutes (time part)
-    r'(?:(\d+(?:\.\d+)?)S)?' // 7: seconds
-    r')?$',
-  );
-
   const ISO8601TimespanParser();
 
   @override
-  Timespan parse(String value) {
-    final match = _regex.firstMatch(value);
-    if (match == null) {
-      throw TimespanParseException(
-        "Invalid ISO-8601 duration '$value'. Expected formats like 'P3Y6M4DT12H30M5S', 'P2W', 'PT10S', 'P1M'.",
-        value,
-      );
+  Timespan? parse(String input) {
+    final len = input.length;
+    if (len == 0 || (input.codeUnitAt(0) != _pUppercase && input.codeUnitAt(0) != _pLowercase)) {
+      return null;
+    }
+
+    int years = 0;
+    int months = 0;
+    int weeks = 0;
+    int days = 0;
+    int hours = 0;
+    int minutes = 0;
+    int seconds = 0;
+    int milliseconds = 0;
+    int microseconds = 0;
+    int nanoseconds = 0;
+
+    int i = 1;
+    bool inTime = false;
+
+    while (i < len) {
+      int ch = input.codeUnitAt(i);
+
+      // check for T/t which indicates time components
+      if (ch == _tUppercase || ch == _tLowercase) {
+        inTime = true;
+        i++;
+        if (i == len) {
+          return null;
+        }
+        ch = input.codeUnitAt(i);
+        if (ch < _zero || ch > _nine) {
+          return null;
+        }
+        continue;
+      }
+
+      // a number should be present after P or PT
+      if (ch < _zero || ch > _nine) {
+        return null;
+      }
+
+      int intPart = 0;
+      while (i < len) {
+        ch = input.codeUnitAt(i);
+        if (ch >= _zero && ch <= _nine) {
+          intPart = intPart * 10 + (ch - _zero);
+          i++;
+        } else {
+          break;
+        }
+      }
+
+      // fractional part only for seconds
+      int frac = 0;
+      int fracLen = 0;
+
+      if (i < len && input.codeUnitAt(i) == _dot) {
+        i++; // skip dot
+        while (i < len) {
+          ch = input.codeUnitAt(i);
+          if (ch >= _zero && ch <= _nine) {
+            if (fracLen < 9) {
+              frac = frac * 10 + (ch - _zero);
+              fracLen++;
+            }
+            i++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // yeah no can do
+      if (i >= len) {
+        return null;
+      }
+
+      final int unit = input.codeUnitAt(i);
+      i++;
+
+      if (!inTime) {
+        // DATE COMPONENTS
+        switch (unit) {
+          // yY
+          case _yUppercase:
+          case _yLowercase:
+            years = intPart;
+            break;
+
+          // mM
+          case _mUppercase:
+          case _mLowercase:
+            months = intPart;
+            break;
+
+          // wW
+          case _wUppercase:
+          case _wLowercase:
+            weeks = intPart;
+            break;
+
+          // dD
+          case _dUppercase:
+          case _dLowercase:
+            days = intPart;
+            break;
+          default:
+            return null;
+        }
+      } else {
+        // TIME COMPONENTS
+        switch (unit) {
+          // hH
+          case _hUppercase:
+          case _hLowercase:
+            hours = intPart;
+            break;
+          // mM
+          case _mUppercase:
+          case _mLowercase:
+            minutes = intPart;
+            break;
+
+          // sS
+          case _sUppercase:
+          case _sLowercase:
+            seconds = intPart;
+            if (fracLen > 0) {
+              final scale = _pow10[fracLen];
+              var extraNs = (frac * 1000000000 ~/ scale);
+              milliseconds = extraNs ~/ 1000000;
+              extraNs %= 1000000;
+              microseconds = extraNs ~/ 1000;
+              nanoseconds = extraNs % 1000;
+            }
+            break;
+          default:
+            return null;
+        }
+      }
+    }
+
+    // means there is trailing garbage like PT10SBLA
+    if (i != len) {
+      return null;
     }
 
     return Timespan(
-      years: int.tryParse(match.group(1) ?? '0') ?? 0,
-      months: int.tryParse(match.group(2) ?? '0') ?? 0,
-      weeks: int.tryParse(match.group(3) ?? '0') ?? 0,
-      days: int.tryParse(match.group(4) ?? '0') ?? 0,
-      hours: int.tryParse(match.group(5) ?? '0') ?? 0,
-      minutes: int.tryParse(match.group(6) ?? '0') ?? 0,
-      seconds: int.tryParse(match.group(7) ?? '0') ?? 0,
+      years: years,
+      months: months,
+      weeks: weeks,
+      days: days,
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      milliseconds: milliseconds,
+      microseconds: microseconds,
+      nanoseconds: nanoseconds,
     );
   }
 }
@@ -141,62 +322,162 @@ class ISO8601TimespanParser extends TimespanParser {
 /// Throws a [TimespanParseException] if the string does not match the expected
 /// format.
 class SimpleUnitTimespanParser extends TimespanParser {
-  // Match a number followed by a unit (ns, us, ms, s, m, h, d)
-  static final _regex = RegExp(r'(\d+(?:\.\d+)?)(ns|us|ms|s|m|h|d)');
-
   const SimpleUnitTimespanParser();
 
   @override
-  Timespan? parse(String value) {
-    final matches = _regex.allMatches(value).toList();
-
-    if (matches.isEmpty) {
-      throw TimespanParseException(
-        "Invalid simple-unit duration: '$value'. Expected formats like '10s', '5m', '1h30m', '2h15m10s'.",
-        value,
-      );
+  Timespan? parse(String input) {
+    final len = input.length;
+    if (len == 0) {
+      return null;
     }
 
-    int days = 0;
-    int hours = 0;
-    int minutes = 0;
-    int seconds = 0;
-    int milliseconds = 0;
-    int microseconds = 0;
-    int nanoseconds = 0;
+    var i = 0;
+    var totalNs = 0;
 
-    for (final match in matches) {
-      final number = double.parse(match.group(1)!);
-      switch (match.group(2)!) {
-        case _daysSuffix:
-          days += number.toInt();
-          break;
-        case _hoursSuffix:
-          hours += number.toInt();
-          break;
-        case _minutesSuffix:
-          minutes += number.toInt();
-          break;
-        case _secondsSuffix:
-          seconds += number.toInt();
-          final fraction = number - number.floor();
-          milliseconds += (fraction * 1000).floor();
-          break;
-        case _millisecondsSuffix:
-          milliseconds += number.toInt();
-          final fraction = number - number.floor();
-          microseconds += (fraction * 1000).floor();
-          break;
-        case _microsecondsSuffix:
-          microseconds += number.toInt();
-          final fraction = number - number.floor();
-          nanoseconds += (fraction * 1000).floor();
-          break;
-        case _nanosecondsSuffix:
-          nanoseconds += number.toInt();
-          break;
+    while (i < len) {
+      var ch = input.codeUnitAt(i);
+      if (ch <= _whitespace) {
+        i++;
+        continue;
       }
+
+      if (!(ch >= _zero && ch <= _nine)) {
+        return null;
+      }
+
+      var intPart = 0;
+      while (i < len) {
+        ch = input.codeUnitAt(i);
+        if (ch >= _zero && ch <= _nine) {
+          intPart = intPart * 10 + (ch - _zero);
+          i++;
+        } else {
+          break;
+        }
+      }
+
+      var frac = 0;
+      var fracLen = 0;
+      if (i < len && input.codeUnitAt(i) == _dot) {
+        // skip dot
+        i++;
+        while (i < len) {
+          ch = input.codeUnitAt(i);
+          if (ch >= _zero && ch <= _nine) {
+            // limit to 9 digits (ns precision)
+            if (fracLen < 9) {
+              frac = frac * 10 + (ch - _zero);
+              fracLen++;
+            }
+            i++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // parse unit (1-2 letters), must exist
+      if (i >= len) {
+        return null;
+      }
+
+      final u1 = input.codeUnitAt(i);
+      int unitNs;
+
+      switch (u1) {
+        // dD
+        case _dLowercase:
+        case _dUppercase:
+          unitNs = _dMultiplier;
+          i++;
+          break;
+
+        // hH
+        case _hLowercase:
+        case _hUppercase:
+          unitNs = _hMultiplier;
+          i++;
+          break;
+
+        // mM
+        case _mUppercase:
+        case _mLowercase:
+          if (i + 1 < len) {
+            final u2 = input.codeUnitAt(i + 1);
+            if (u2 == _sLowercase || u2 == _sUppercase) {
+              unitNs = _msMultiplier;
+              i += 2;
+              break;
+            }
+          }
+
+          unitNs = _mMultiplier;
+          i++;
+          break;
+
+        // sS
+        case _sUppercase:
+        case _sLowercase:
+          unitNs = _sMultiplier;
+          i++;
+          break;
+
+        // nN
+        case _nUppercase:
+        case _nLowercase:
+          if (i + 1 < len) {
+            final u2 = input.codeUnitAt(i + 1);
+            if (u2 == _sLowercase || u2 == _sUppercase) {
+              unitNs = _nsMultiplier;
+              i += 2;
+              break;
+            }
+          }
+          // only ns (nanoseconds) is valid, and at this point we know there is no s
+          return null;
+
+        // uU
+        case _uUppercase:
+        case _uLowercase:
+          if (i + 1 < len) {
+            final u2 = input.codeUnitAt(i + 1);
+            if (u2 == _sLowercase || u2 == _sUppercase) {
+              unitNs = _usMultiplier;
+              i += 2;
+              break;
+            }
+          }
+          // only us (microseconds) is valid, and at this point we know there is no s
+          return null;
+
+        default:
+          return null;
+      }
+
+      // compute value in nanoseconds without using floating point
+      var partNs = intPart * unitNs;
+      if (fracLen > 0) {
+        partNs += (frac * unitNs) ~/ _pow10[fracLen];
+      }
+
+      totalNs += partNs;
     }
+
+    // Now split totalNs back to fields (days..nanoseconds)
+    var rem = totalNs;
+    final days = rem ~/ _dMultiplier;
+    rem %= _dMultiplier;
+    final hours = rem ~/ _hMultiplier;
+    rem %= _hMultiplier;
+    final minutes = rem ~/ _mMultiplier;
+    rem %= _mMultiplier;
+    final seconds = rem ~/ _sMultiplier;
+    rem %= _sMultiplier;
+    final milliseconds = rem ~/ _msMultiplier;
+    rem %= _msMultiplier;
+    final microseconds = rem ~/ _usMultiplier;
+    rem %= _usMultiplier;
+    final nanoseconds = rem; // remainder
 
     return Timespan(
       days: days,

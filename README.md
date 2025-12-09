@@ -6,6 +6,13 @@
 [![codecov](https://codecov.io/gh/buijs-dev/clockwork/branch/main/graph/badge.svg?token=rF9oTajbaK)](https://codecov.io/gh/buijs-dev/clockwork)
 [![CodeScene Code Health](https://codescene.io/projects/27237/status-badges/code-health)](https://codescene.io/projects/27237)
 
+A high-performance time toolkit for Dart, offering fast mockable clocks, elegant DateTime extensions, and rock-solid duration parsing with full ISO-8601 and Go-style syntax support.
+
+
+
+
+
+
 
 This library provides three core building blocks:
 
@@ -51,11 +58,13 @@ Quick example (conceptual)
 Duration parsing support — examples
 
 ISO‑8601
+case insensitive by default
 - `PT15M`   → 15 minutes
 - `PT1H30M` → 1 hour 30 minutes
 - `P2DT3H4M`→ 2 days, 3 hours, 4 minutes
 
 Simple Units
+case insensitive by default
 - `1ns` → nanoseconds
 - `1us` → microseconds
 - `1ms` → milliseconds

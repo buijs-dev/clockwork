@@ -91,6 +91,46 @@ class Timespan {
     this.nanoseconds = 0,
   });
 
+  /// Returns a new [Timespan] with the given fields replaced.
+  ///
+  /// Any parameter left as `null` will keep the current value.
+  Timespan copyWith({
+    int? years,
+    int? months,
+    int? weeks,
+    int? days,
+    int? hours,
+    int? minutes,
+    int? seconds,
+    int? milliseconds,
+    int? microseconds,
+    int? nanoseconds,
+  }) {
+    return Timespan(
+      years: years ?? this.years,
+      months: months ?? this.months,
+      weeks: weeks ?? this.weeks,
+      days: days ?? this.days,
+      hours: hours ?? this.hours,
+      minutes: minutes ?? this.minutes,
+      seconds: seconds ?? this.seconds,
+      milliseconds: milliseconds ?? this.milliseconds,
+      microseconds: microseconds ?? this.microseconds,
+      nanoseconds: nanoseconds ?? this.nanoseconds,
+    );
+  }
+
+  @override
+  String toString() =>
+      'Timespan('
+      'd=$days,'
+      'h=$hours,'
+      'm=$minutes,'
+      's=$seconds,'
+      'ms=$milliseconds,'
+      'us=$microseconds,'
+      'ns=$nanoseconds)';
+
   /// Parses a textual duration representation into a [Timespan].
   ///
   /// Supported formats:
@@ -105,10 +145,11 @@ class Timespan {
   /// - `TimespanFormatException` for invalid formats.
   factory Timespan.parse(String value) {
     final trimmed = value.trim();
-    if (trimmed.startsWith('P')) {
-      return const ISO8601TimespanParser().parse(trimmed);
+    final parsed = const ISO8601TimespanParser().parse(trimmed) ?? const SimpleUnitTimespanParser().parse(trimmed);
+    if (parsed == null) {
+      throw TimespanParseException("Invalid timespan format", value);
     } else {
-      return const SimpleUnitTimespanParser().parse(trimmed)!;
+      return parsed;
     }
   }
 
@@ -135,60 +176,19 @@ class Timespan {
   /// ```
   Duration toDuration({DateTime? start}) {
     final reference = start?.toUtc() ?? DateTime.now().toUtc();
-    final cursor = _Cursor(reference)
-      ..addYears(years)
-      ..addMonths(months)
-      ..addWeeks(weeks)
-      ..addDays(days);
-
-    return cursor.utc.difference(reference) +
-        Duration(
-          hours: hours,
-          minutes: minutes,
-          seconds: seconds,
-          milliseconds: milliseconds,
-          microseconds: microseconds + (nanoseconds ~/ 1000),
-        );
-  }
-}
-
-/// Internal helper used to incrementally apply calendar arithmetic
-/// to a UTC timestamp.
-///
-/// `_Cursor` ensures operations are applied in sequence and correctly handle
-/// leap years, month overflow, and clamping.
-class _Cursor {
-  DateTime _current;
-  _Cursor(this._current);
-
-  /// Returns the current UTC timestamp.
-  DateTime get utc => _current;
-
-  /// Adds full calendar years, including leap-year-aware clamping.
-  void addYears(int years) {
-    if (years != 0) {
-      _current = _current.addYears(years);
-    }
+    var end = reference;
+    if (years != 0) end = end.addYears(years);
+    if (months != 0) end = end.addMonths(months);
+    if (weeks != 0) end = end.add(Duration(days: weeks * 7));
+    if (days != 0) end = end.add(Duration(days: days));
+    return end.difference(reference) + _time;
   }
 
-  /// Adds full calendar months, applying clamping for shorter months.
-  void addMonths(int months) {
-    if (months != 0) {
-      _current = _current.addMonths(months);
-    }
-  }
-
-  /// Adds full weeks (7 days each).
-  void addWeeks(int weeks) {
-    if (weeks != 0) {
-      _current = _current.add(Duration(days: weeks * 7));
-    }
-  }
-
-  /// Adds full days.
-  void addDays(int days) {
-    if (days != 0) {
-      _current = _current.add(Duration(days: days));
-    }
-  }
+  Duration get _time => Duration(
+    hours: hours,
+    minutes: minutes,
+    seconds: seconds,
+    milliseconds: milliseconds,
+    microseconds: microseconds + (nanoseconds ~/ 1000),
+  );
 }

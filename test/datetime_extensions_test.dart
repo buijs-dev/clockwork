@@ -36,12 +36,6 @@ void main() {
       expect(r.isUtc, false);
       expect(r.hour, 20);
     });
-
-    test('can force UTC on local value', () {
-      final t = DateTime(2024, 1, 1, 10);
-      final r = t.copyWith(utc: true);
-      expect(r.isUtc, true);
-    });
   });
 
   group('start/end truncation helpers', () {
@@ -175,22 +169,6 @@ void main() {
 
     test('differenceInHours', () {
       expect(a.differenceInHours(b), b.difference(a).inHours);
-    });
-  });
-
-  group('UTC/local behavior in getters', () {
-    test('startOfDay respects utc: false override', () {
-      final t = DateTime.utc(2024, 6, 1, 12);
-      final r = t.startOfDay(utc: false);
-      expect(r.isUtc, false);
-      expect(r.hour, 0);
-    });
-
-    test('endOfMonth respects utc: false override', () {
-      final t = DateTime.utc(2024, 2, 10);
-      final r = t.endOfMonth(utc: false);
-      expect(r.isUtc, false);
-      expect(r.day, 29);
     });
   });
 }

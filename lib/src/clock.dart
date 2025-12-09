@@ -84,9 +84,6 @@ abstract class Clock {
   /// Creates a [OffsetClock] from system time.
   static OffsetClock offset(Duration offset, {Clock? base}) => OffsetClock(offset, base: base);
 
-  /// Creates a [StopwatchClock].
-  static StopwatchClock stopwatch({Stopwatch? sw, DateTime? origin}) => StopwatchClock(sw: sw, origin: origin);
-
   /// Creates a [TickingClock].
   static TickingClock ticking(DateTime start, Duration tick) => TickingClock(start, tick);
 
@@ -233,28 +230,4 @@ class TickingClock extends Clock {
     _currentUtc = _currentUtc.add(tick);
     return c;
   }
-}
-
-/// A [Clock] that increases time based on a running [Stopwatch].
-///
-/// The clock starts counting from an origin time (UTC) and advances according
-/// to the elapsed duration of the stopwatch.
-///
-/// Useful for:
-/// - High-precision simulations,
-/// - Measuring elapsed time with controlled origins,
-/// - Deterministic performance testing where system time must not be used.
-class StopwatchClock extends Clock {
-  /// The underlying stopwatch used to measure elapsed time.
-  final Stopwatch _sw;
-
-  /// The reference UTC instant representing time zero.
-  final DateTime _originUtc;
-
-  StopwatchClock({Stopwatch? sw, DateTime? origin})
-    : _sw = sw ?? (Stopwatch()..start()),
-      _originUtc = (origin ?? DateTime.now()).toUtc();
-
-  @override
-  DateTime _nowUtc() => _originUtc.add(_sw.elapsed);
 }

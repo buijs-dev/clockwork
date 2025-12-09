@@ -1,0 +1,1 @@
+dart run benchmark/timespan_parser_benchmark.dart

@@ -1,5 +1,4 @@
 // ignore_for_file: avoid_print
-
 import 'package:clockwork/clockwork.dart';
 
 /// This example demonstrates the full public API available in `lib/src`:
@@ -53,15 +52,6 @@ void _clockExamples() {
   print('Tick 2: ${ticking.nowUtc()}');
   print('Tick 3: ${ticking.nowUtc()}');
 
-  // Stopwatch clock
-  final sw = Stopwatch()..start();
-  final swClock = Clock.stopwatch(sw: sw, origin: DateTime.utc(2025, 1, 1));
-  // Wait a tiny moment without async: do a small busy loop to elapse some time
-  for (var i = 0; i < 100000; i++) {
-    // noop to spend some CPU cycles
-  }
-  print('Stopwatch origin+elapsed: ${swClock.nowUtc()}');
-
   // ClockProvider.withClock for a temporary global override
   final before = ClockProvider.current;
   final result = ClockProvider.withClock(fixed, () {
@@ -92,7 +82,6 @@ void _dateTimeExtensionExamples() {
   print('startOfDay: ${utc.startOfDay()}');
   print('endOfDay:   ${utc.endOfDay()}');
   print('roundToMinute: ${utc.roundToMinute()}');
-  print('floorToMinute: ${utc.floorToMinute()}');
   print('isLeapDay (Feb29?): ${DateTime.utc(2024, 2, 29).isLeapDay}');
   print('isLeapMonth (Feb?): ${utc.isLeapMonth}');
   print('isLeapYear: ${utc.isLeapYear}');
@@ -179,13 +168,13 @@ void _timespanExamples() {
 
   // Parsing ISO-8601 durations
   final isoParser = const ISO8601TimespanParser();
-  final iso = isoParser.parse('P3Y6M4DT12H30M5S');
+  final iso = isoParser.parseOrThrow('P3Y6M4DT12H30M5S');
   print('Parsed ISO-8601: $iso -> toDuration(ref Jan31) = ${iso.toDuration(start: reference)}');
 
   // Parsing simple/go-style durations
   final simpleParser = const SimpleUnitTimespanParser();
-  final simple = simpleParser.parse('1h30m10.5s');
-  print('Parsed simple: $simple -> toDuration = ${simple!.toDuration(start: reference)}');
+  final simple = simpleParser.parseOrThrow('1h30m10.5s');
+  print('Parsed simple: $simple -> toDuration = ${simple.toDuration(start: reference)}');
 
   // Using Timespan.parse auto-detection
   final auto1 = Timespan.parse('PT45S');
