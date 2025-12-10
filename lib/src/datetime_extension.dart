@@ -110,24 +110,34 @@ extension DateTimeDateHelpers on DateTime {
   /// End of day at 23:59:59.999999 for this DateTime (preserves UTC/local).
   DateTime endOfDay() => copyWith(hour: 23, minute: 59, second: 59, millisecond: 999, microsecond: 999);
 
+  /// True if this date is February 29th.
   bool get isLeapDay => month == 2 && day == 29;
 
+  /// True if this month is February of a leap year.
   bool get isLeapMonth => month == 2 && isLeapYear;
 
+  /// True if the year component is a Gregorian leap year.
   bool get isLeapYear => _isLeapYear(year);
 
+  /// True if this date falls on Saturday or Sunday.
   bool get isWeekend => weekday == DateTime.saturday || weekday == DateTime.sunday;
 
+  /// True if this date falls on Monday–Friday.
   bool get isWeekday => !isWeekend;
 
+  /// True if [other] has the same year, month and day as this instance.
   bool isSameDay(DateTime other) => year == other.year && month == other.month && day == other.day;
 
+  /// True if [other] has the same year and month as this instance.
   bool isSameMonth(DateTime other) => year == other.year && month == other.month;
 
+  /// True if [other] has the same year as this instance.
   bool isSameYear(DateTime other) => year == other.year;
 
+  /// First instant of the current month (at 00:00:00.000000).
   DateTime startOfMonth() => copyWith(day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
 
+  /// Last instant of the current month (at 23:59:59.999999).
   DateTime endOfMonth() {
     // compute first moment of next month then subtract 1 microsecond
     final nextMonthYear = month == 12 ? year + 1 : year;
@@ -145,6 +155,8 @@ extension DateTimeDateHelpers on DateTime {
     return nextMonthFirst.subtract(const Duration(microseconds: 1));
   }
 
+  /// Adds [count] calendar months, clamping the day when needed
+  /// (e.g. Jan 31 + 1 month → Feb 28/29).
   DateTime addMonths(int count) {
     final total = (year * 12 + month - 1) + count;
     final y = total ~/ 12;
@@ -160,11 +172,15 @@ extension DateTimeDateHelpers on DateTime {
     return 31;
   }
 
+  /// First instant of the current year (at 00:00:00.000000 on Jan 1).
   DateTime startOfYear() => copyWith(month: 1, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
 
+  /// Last instant of the current year (at 23:59:59.999999 on Dec 31).
   DateTime endOfYear() =>
       copyWith(month: 12, day: 31, hour: 23, minute: 59, second: 59, millisecond: 999, microsecond: 999);
 
+  /// Adds [count] calendar years, adjusting Feb 29 to Feb 28 when the
+  /// resulting year is not a leap year.
   DateTime addYears(int count) {
     final newYear = year + count;
     if (month == 2 && day == 29 && !_isLeapYear(newYear)) {
@@ -175,20 +191,25 @@ extension DateTimeDateHelpers on DateTime {
     }
   }
 
+  /// Start of week assuming Monday is the first day.
   DateTime startOfWeek() {
     final offset = weekday - DateTime.monday;
     return startOfDay().subtract(Duration(days: offset));
   }
 
+  /// End of week (Sunday 23:59:59.999999) assuming Monday is the first day.
   DateTime endOfWeek() => startOfWeek().add(const Duration(days: 7)).subtract(const Duration(microseconds: 1));
 
+  /// Quarter number for this date (1..4).
   int get quarter => ((month - 1) ~/ 3) + 1;
 
+  /// First instant of the current quarter.
   DateTime startOfQuarter() {
     final m = ((quarter - 1) * 3) + 1;
     return copyWith(month: m, day: 1, hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
   }
 
+  /// Last instant of the current quarter.
   DateTime endOfQuarter() {
     final endM = quarter * 3;
     final nextYear = endM == 12 ? year + 1 : year;
@@ -206,8 +227,10 @@ extension DateTimeDateHelpers on DateTime {
     return next.subtract(const Duration(microseconds: 1));
   }
 
+  /// Same date/time in the next quarter.
   DateTime nextQuarter() => addMonths(3);
 
+  /// Same date/time in the previous quarter.
   DateTime previousQuarter() => addMonths(-3);
 
   /// Clamp between [min] and [max].
@@ -225,7 +248,7 @@ extension DateTimeDateHelpers on DateTime {
     return subtract(Duration(days: delta == 0 ? 7 : delta));
   }
 
-  /// True if in range [start, end] inclusive.
+  /// True if in range (start, end) inclusive.
   bool between(DateTime start, DateTime end) => (isAfterOrSame(start) && isBeforeOrSame(end));
 }
 

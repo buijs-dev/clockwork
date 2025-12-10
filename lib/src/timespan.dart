@@ -43,6 +43,8 @@ import 'timespan_parser.dart';
 /// final duration = span.toDuration(start: DateTime.utc(2025, 1, 31));
 /// // Duration accounts for month-length rules, leap years, etc.
 /// ```
+///
+/// {@category timespan}
 class Timespan {
   /// Number of full calendar years in the span.
   final int years;

@@ -1,4 +1,3 @@
-# Clockwork — Summary of lib/src
 
 [![](https://img.shields.io/badge/Buijs-Software-blue)](https://pub.dev/publishers/buijs.dev/packages)
 [![GitHub license](https://img.shields.io/github/license/buijs-dev/klutter-dart?color=black&logoColor=black)](https://github.com/buijs-dev/clockwork/blob/main/LICENSE)
@@ -7,7 +6,6 @@
 [![CodeScene Code Health](https://codescene.io/projects/27237/status-badges/code-health)](https://codescene.io/projects/27237)
 
 A high-performance time toolkit for Dart, offering fast mockable clocks, elegant DateTime extensions, and rock-solid duration parsing with full ISO-8601 and Go-style syntax support.
-
 
 
 
@@ -72,3 +70,12 @@ case insensitive by default
 - `1m`  → minutes
 - `1h`  → hours
 - `1d`  → days
+
+## Documentation
+
+- Overview and Table of Contents: docs/index.md
+- Clocks API: docs/clock.md
+- DateTime Extensions: docs/datetime_extensions.md
+- Timespan: docs/timespan.md
+- Parsing Durations: docs/parsing.md
+- Examples: docs/examples.md

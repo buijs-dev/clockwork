@@ -31,6 +31,7 @@
 ///
 /// The active clock is stored in static mutable state, but changes are
 /// always restored after `withClock` completes.
+/// {@category clock}
 class ClockProvider {
   const ClockProvider._();
 
@@ -79,16 +80,30 @@ abstract class Clock {
   static SystemClock system() => SystemClock();
 
   /// Creates a [FixedClock] that always returns the same fixed instant.
-  static FixedClock fixed(DateTime fixedTime) => FixedClock(fixedTime);
+  static FixedClock fixed(int year, [
+    int month = 1,
+  int day = 1,
+  int hour = 0,
+  int minute = 0,
+  int second = 0,
+  int millisecond = 0,
+  int microsecond = 0]) => FixedClock(DateTime.utc(year, month, day, hour, minute, second, millisecond, microsecond));
 
   /// Creates a [OffsetClock] from system time.
-  static OffsetClock offset(Duration offset, {Clock? base}) => OffsetClock(offset, base: base);
+  static OffsetClock offset({
+    required int hours,
+    int minutes = 0,
+    Clock? base,
+  }) => OffsetClock(Duration(hours: hours, minutes: minutes), base: base);
 
   /// Creates a [TickingClock].
-  static TickingClock ticking(DateTime start, Duration tick) => TickingClock(start, tick);
+  static TickingClock ticking({
+    required Duration tick,
+    DateTime? start,
+  }) => TickingClock(start ?? system().now(asUtc: true), tick);
 
-  // Creates an [AdjustableClock].
-  static AdjustableClock adjustable({DateTime? initial}) => AdjustableClock(initial ?? system().nowUtc());
+  /// Creates an [AdjustableClock].
+  static AdjustableClock adjustable({DateTime? initial}) => AdjustableClock(initial ?? system().now());
 
   const Clock();
 
@@ -108,9 +123,6 @@ abstract class Clock {
     return (asUtc == null || asUtc == true) ? utc : utc.toLocal();
   }
 
-  /// Returns the current time in UTC without performing any conversion.
-  DateTime nowUtc() => _nowUtc();
-
   /// Returns the current date at midnight based on the internal UTC clock.
   ///
   /// If [asUtc] is `true` (default), the returned value is midnight UTC.
@@ -124,23 +136,23 @@ abstract class Clock {
   /// Returns the Unix timestamp in whole seconds.
   ///
   /// This value is always derived from the internal UTC value.
-  int secondsSinceEpoch({bool? asUtc}) => millisecondsSinceEpoch(asUtc: asUtc) ~/ 1000;
+  int get secondsSinceEpoch => millisecondsSinceEpoch ~/ 1000;
 
   /// Returns the Unix timestamp in milliseconds.
   ///
   /// The returned value always represents UTC milliseconds.
-  int millisecondsSinceEpoch({bool? asUtc}) => now(asUtc: true).millisecondsSinceEpoch;
+  int get millisecondsSinceEpoch => now().millisecondsSinceEpoch;
 
   /// Returns the Unix timestamp in microseconds.
   ///
   /// The returned value always represents UTC microseconds.
-  int microsecondsSinceEpoch({bool? asUtc}) => now(asUtc: true).microsecondsSinceEpoch;
+  int get microsecondsSinceEpoch => now().microsecondsSinceEpoch;
 
   /// Returns the timezone offset of the current instant.
   ///
   /// This always reflects the local timezone offset and therefore depends on
   /// converting the internally stored UTC instant to local time.
-  Duration timeZoneOffset({bool? asUtc}) => now(asUtc: false).timeZoneOffset;
+  Duration get timeZoneOffset => now(asUtc: false).timeZoneOffset;
 }
 
 /// A [Clock] that forwards to the system wall-clock time (`DateTime.now()`
@@ -183,7 +195,7 @@ class OffsetClock extends Clock {
   OffsetClock(this.offset, {Clock? base}) : base = base ?? const SystemClock();
 
   @override
-  DateTime _nowUtc() => base.nowUtc().add(offset);
+  DateTime _nowUtc() => base.now().add(offset);
 }
 
 /// A manually adjustable clock whose time can be explicitly set or advanced.

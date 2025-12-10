@@ -18,6 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+/// Clockwork — A high‑performance time toolkit for Dart.
+///
+/// This package provides:
+///
+/// - A flexible `Clock` abstraction with multiple implementations
+///   (`SystemClock`, `FixedClock`, `OffsetClock`, `TickingClock`, `AdjustableClock`) and
+///   a simple override mechanism via `ClockProvider.withClock`.
+/// - Rich `DateTime` extensions for calendar‑safe manipulation,
+///   truncation/rounding, comparisons, ISO week helpers, and distance utilities.
+/// - A calendar‑aware `Timespan` type plus robust parsers that support both
+///   ISO‑8601 (e.g. `P3Y6M4DT12H30M5S`) and simple unit formats (e.g. `1h30m`, `250ms`).
+///
+/// See the docs/ folder for categorized guides:
+/// - docs/clock.md — Clocks API and best practices
+/// - docs/datetime_extensions.md — DateTime helpers overview
+/// - docs/timespan.md — Timespan modeling and conversion
+/// - docs/parsing.md — Duration parsing formats and details
 export 'src/clock.dart';
 export 'src/datetime_extension.dart';
 export 'src/timespan.dart';

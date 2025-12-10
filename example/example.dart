@@ -16,47 +16,69 @@ void main() {
 
   print('\n--- Timespan & Parsers ---');
   _timespanExamples();
+
+  final systemClock = Clock.system();
+
+  // current DateTime in UTC
+  systemClock.now();
+  // redundant because default is true
+  systemClock.now(asUtc: true);
+  // local DateTime instead of UTC
+  systemClock.now(asUtc: false);
+  // current day
+  systemClock.today();
+  // redundant because default is true
+  systemClock.today(asUtc: true);
+  // current local DateTime instead of UTC
+  systemClock.today(asUtc: false);
+  // current system timezone offset
+  systemClock.timeZoneOffset;
+
+  final fixedClock = Clock.fixed(2025, 12, 1);
+  // current the fixed DateTime
+  fixedClock.now();
+
+
 }
 
 void _clockExamples() {
   // System clock (default)
   final sys = Clock.system();
-  print('System now UTC:   \'${sys.nowUtc()}\'');
+  print('System now UTC:   \'${sys.now()}\'');
   print('System today UTC: \'${sys.today()}\'');
-  print('Seconds since epoch: ${sys.secondsSinceEpoch()}');
-  print('Millis since epoch:  ${sys.millisecondsSinceEpoch()}');
-  print('Micros since epoch:  ${sys.microsecondsSinceEpoch()}');
-  print('Local timezone offset (Duration): ${sys.timeZoneOffset()}');
+  print('Seconds since epoch: ${sys.secondsSinceEpoch}');
+  print('Millis since epoch:  ${sys.millisecondsSinceEpoch}');
+  print('Micros since epoch:  ${sys.microsecondsSinceEpoch}');
+  print('Local timezone offset (Duration): ${sys.timeZoneOffset}');
 
   // Fixed clock
-  final fixedInstant = DateTime.utc(2025, 12, 31, 23, 59, 59);
-  final fixed = Clock.fixed(fixedInstant);
-  print('Fixed now UTC:    \'${fixed.nowUtc()}\'');
+  final fixed = Clock.fixed(2025, 12, 31, 23, 59, 59);
+  print('Fixed now UTC:    \'${fixed.now()}\'');
   print('Fixed today UTC:  \'${fixed.today()}\'');
 
   // Offset clock (+2h from system)
-  final offset = Clock.offset(const Duration(hours: 2));
-  print('Offset(+2h) now UTC: \'${offset.nowUtc()}\' (base: system+2h)');
+  final offset = Clock.offset(hours: 2);
+  print('Offset(+2h) now UTC: \'${offset.now()}\' (base: system+2h)');
 
   // Adjustable clock
   final adjustable = Clock.adjustable(initial: DateTime.utc(2000, 1, 1));
-  print('Adjustable start: \'${adjustable.nowUtc()}\'');
+  print('Adjustable start: \'${adjustable.now()}\'');
   adjustable.advance(const Duration(days: 10));
-  print('Adjustable +10d:  \'${adjustable.nowUtc()}\'');
+  print('Adjustable +10d:  \'${adjustable.now()}\'');
   adjustable.set(DateTime.utc(1999, 12, 31, 12));
-  print('Adjustable set:   \'${adjustable.nowUtc()}\'');
+  print('Adjustable set:   \'${adjustable.now()}\'');
 
   // Ticking clock (ticks +500ms every call)
-  final ticking = Clock.ticking(DateTime.utc(2025, 1, 1), const Duration(milliseconds: 500));
-  print('Tick 1: ${ticking.nowUtc()}');
-  print('Tick 2: ${ticking.nowUtc()}');
-  print('Tick 3: ${ticking.nowUtc()}');
+  final ticking = Clock.ticking(start: DateTime.utc(2025, 1, 1), tick: const Duration(milliseconds: 500));
+  print('Tick 1: ${ticking.now()}');
+  print('Tick 2: ${ticking.now()}');
+  print('Tick 3: ${ticking.now()}');
 
   // ClockProvider.withClock for a temporary global override
   final before = ClockProvider.current;
   final result = ClockProvider.withClock(fixed, () {
     // Within this callback, ClockProvider.current points to our fixed clock
-    final insideNow = ClockProvider.current.nowUtc();
+    final insideNow = ClockProvider.current.now();
     print('Inside withClock: $insideNow (should equal fixed)');
     return 'done';
   });

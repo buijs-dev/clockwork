@@ -55,6 +55,11 @@ const int _dMultiplier = 24 * _hMultiplier;
 // pow10 lookup for fractional parsing
 const List<int> _pow10 = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000];
 
+/// Base class for parsing textual representations of durations into a
+/// calendar‑aware [Timespan]. Implementations may support different syntax
+/// families (e.g., ISO‑8601 or simple unit strings).
+///
+/// {@category timespan}
 sealed class TimespanParser {
   const TimespanParser();
 
@@ -71,6 +76,8 @@ sealed class TimespanParser {
 }
 
 /// Exception thrown when a duration cannot be parsed.
+///
+/// {@category timespan}
 class TimespanParseException implements FormatException {
   @override
   final String message;
@@ -112,6 +119,8 @@ class TimespanParseException implements FormatException {
 /// `P3Y6M4DT12H30M5S`
 /// Represents a duration of **3 years**, **6 months**, **4 days**,
 /// **12 hours**, **30 minutes**, and **5 seconds**.
+///
+/// {@category timespan}
 class ISO8601TimespanParser extends TimespanParser {
   const ISO8601TimespanParser();
 
@@ -321,6 +330,8 @@ class ISO8601TimespanParser extends TimespanParser {
 ///
 /// Throws a [TimespanParseException] if the string does not match the expected
 /// format.
+///
+/// {@category timespan}
 class SimpleUnitTimespanParser extends TimespanParser {
   const SimpleUnitTimespanParser();
 
